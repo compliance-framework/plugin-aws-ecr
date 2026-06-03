@@ -361,9 +361,11 @@ func (df *DataFetcher) fetchImageScanContext(ctx context.Context, client ECRClie
 
 	if findingsOut.ImageScanFindings != nil && imgCtx.ScanStatus == "COMPLETE" {
 		counts := findingsOut.ImageScanFindings.FindingSeverityCounts
-		imgCtx.FindingsCritical = int(counts["CRITICAL"])
-		imgCtx.FindingsHigh = int(counts["HIGH"])
-		imgCtx.HasSeverityData = true
+		if counts != nil {
+			imgCtx.FindingsCritical = int(counts["CRITICAL"])
+			imgCtx.FindingsHigh = int(counts["HIGH"])
+			imgCtx.HasSeverityData = true
+		}
 	}
 
 	return imgCtx

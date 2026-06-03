@@ -15,4 +15,6 @@ build: clean ## Build the plugin binary
 	@go build -o dist/plugin main.go
 
 run: build ## Run the agent with the built plugin
+	@if [ ! -x ../agent/dist/concom ]; then echo "ERROR: ../agent/dist/concom not found or not executable — build the agent first"; exit 1; fi
+	@if [ ! -r ./.config/config.yaml ]; then echo "ERROR: ./.config/config.yaml not found — copy examples/agent-config.yaml to .config/config.yaml and fill in your settings"; exit 1; fi
 	@../agent/dist/./concom agent --config ./.config/config.yaml

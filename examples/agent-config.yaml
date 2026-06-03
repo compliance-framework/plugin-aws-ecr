@@ -1,18 +1,16 @@
-# plugin-aws-ecr agent configuration examples
-# Copy one of the two source variants below and remove the other.
+# plugin-aws-ecr agent configuration
+# Choose ONE source variant by setting source.type to either "local" or "oci".
 
 plugins:
-  # ----- Option A: local binary (development / CI) -----
   - name: plugin-aws-ecr
     source:
+      # Local binary (development / CI)
       type: local
       path: /path/to/plugin-aws-ecr/dist/plugin
 
-  # ----- Option B: OCI image (production) -----
-  # - name: plugin-aws-ecr
-  #   source:
-  #     type: oci
-  #     image: ghcr.io/container-solutions/plugin-aws-ecr:latest
+      # OCI image (production) — replace the block above with these two lines:
+      # type: oci
+      # image: ghcr.io/compliance-framework/plugin-aws-ecr:latest
 
     config:
       # regions: comma-separated list of AWS regions to scan (required)

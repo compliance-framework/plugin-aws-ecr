@@ -468,3 +468,50 @@ func TestFetchImages_NonScanError(t *testing.T) {
 		t.Fatalf("expected 1 image, got %d", len(images))
 	}
 }
+
+// TestFetchImages_ScanCompleteNilCounts verifies that a COMPLETE scan with a nil
+// FindingSeverityCounts map does not set HasSeverityData and leaves counts at zero.
+func TestFetchImages_ScanCompleteNilCounts(t *testing.T) {
+	now := time.Now().UTC()
+	pushedAt := now.Add(-1 * 24 * time.Hour)
+
+	mock := noopPerRepoMock()
+	mock.describeImages = func(_ context.Context, _ *ecr.DescribeImagesInput, _ ...func(*ecr.Options)) (*ecr.DescribeImagesOutput, error) {
+		return &ecr.DescribeImagesOutput{
+			ImageDetails: []types.ImageDetail{{ImageDigest: aws.String("sha256:nilcounts"), ImagePushedAt: &pushedAt}},
+		}, nil
+	}
+	mock.describeImageScanFindings = func(_ context.Context, _ *ecr.DescribeImageScanFindingsInput, _ ...func(*ecr.Options)) (*ecr.DescribeImageScanFindingsOutput, error) {
+		scanTime := now.Add(-1 * time.Hour)
+		return &ecr.DescribeImageScanFindingsOutput{
+			ImageScanStatus: &types.ImageScanStatus{Status: types.ScanStatusComplete},
+			// FindingSeverityCounts deliberately nil
+			ImageScanFindings: &types.ImageScanFindings{
+				ImageScanCompletedAt:  &scanTime,
+				FindingSeverityCounts: nil,
+			},
+		}, nil
+	}
+
+	f := newTestFetcher(mock)
+	images, err := f.FetchImages(context.Background(), "us-east-1", []string{"my-repo"}, "123456789012", 90)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(images) != 1 {
+		t.Fatalf("expected 1 image, got %d", len(images))
+	}
+	img := images[0]
+	if img.ScanStatus != "COMPLETE" {
+		t.Errorf("scan_status: want COMPLETE, got %q", img.ScanStatus)
+	}
+	if img.HasSeverityData {
+		t.Error("has_severity_data: want false when FindingSeverityCounts is nil")
+	}
+	if img.FindingsCritical != 0 {
+		t.Errorf("findings_critical: want 0, got %d", img.FindingsCritical)
+	}
+	if img.FindingsHigh != 0 {
+		t.Errorf("findings_high: want 0, got %d", img.FindingsHigh)
+	}
+}

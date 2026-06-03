@@ -46,6 +46,9 @@ func TestParseConfig_MultipleAccounts(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	want := []string{"111111111111", "222222222222"}
+	if got, wantLen := len(cfg.Accounts), len(want); got != wantLen {
+		t.Fatalf("accounts: want %d entries, got %d", wantLen, got)
+	}
 	for i, a := range want {
 		if cfg.Accounts[i] != a {
 			t.Errorf("account[%d]: want %q, got %q", i, a, cfg.Accounts[i])

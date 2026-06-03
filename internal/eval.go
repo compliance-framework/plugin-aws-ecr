@@ -129,7 +129,7 @@ func (pe *PolicyEvaluator) EvalImage(ctx context.Context, image ImageContext, po
 	if len(digestShort) > 19 {
 		digestShort = digestShort[:19]
 	}
-	inventoryID := fmt.Sprintf("aws-ecr-image/%s/%s/%s", image.AccountID, image.RepositoryName, digestShort)
+	inventoryID := fmt.Sprintf("aws-ecr-image/%s/%s/%s/%s", image.AccountID, image.Region, image.RepositoryName, image.ImageDigest)
 
 	labels := MergeMaps(extraLabels, imageBaseLabels(), map[string]string{
 		"repository_arn":  image.RepositoryArn,
@@ -226,7 +226,7 @@ func ecrActors(pluginTitle string) []*proto.OriginActor {
 			Type:  "tool",
 			Links: []*proto.Link{
 				{
-					Href: "https://github.com/container-solutions/plugin-aws-ecr",
+					Href: "https://github.com/compliance-framework/plugin-aws-ecr",
 					Rel:  StringAddressed("reference"),
 					Text: StringAddressed("The Continuous Compliance Framework AWS ECR Plugin"),
 				},

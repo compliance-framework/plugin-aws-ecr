@@ -1,0 +1,59 @@
+# plugin-aws-ecr agent configuration
+# Choose ONE source variant by setting source.type to either "local" or "oci".
+
+plugins:
+  - name: plugin-aws-ecr
+    source:
+      # Local binary (development / CI)
+      type: local
+      path: /path/to/plugin-aws-ecr/dist/plugin
+
+      # OCI image (production) — replace the block above with these two lines:
+      # type: oci
+      # image: ghcr.io/compliance-framework/plugin-aws-ecr:latest
+
+    config:
+      # regions: comma-separated list of AWS regions to scan (required)
+      regions: "us-east-1,eu-west-1"
+
+      # accounts: comma-separated list of account IDs to filter on (optional)
+      # If omitted all repositories in each region are evaluated.
+      # accounts: "123456789012,987654321098"
+
+      # policy_labels: JSON object of extra labels added to every Evidence record (optional)
+      # Useful for tagging evidence by environment, team, or cost centre.
+      # policy_labels: '{"env":"prod","team":"platform"}'
+
+    policy_paths:
+      - /path/to/plugin-aws-ecr-policies/dist/bundle.tar.gz
+
+    # policy_data overrides the defaults in policies/data.json at runtime.
+    policy_data:
+      # approved_encryption_types: list of allowed ECR encryption types.
+      # Allowed values: "KMS", "AES256", "KMS_DSSE"
+      approved_encryption_types:
+        - "KMS"
+
+      # approved_registry_scan_types: list of allowed registry-level scan modes.
+      # Allowed values: "BASIC", "ENHANCED"
+      approved_registry_scan_types:
+        - "ENHANCED"
+
+      # required_repository_tags: tag keys that every ECR repository must carry.
+      required_repository_tags:
+        - "Environment"
+        - "Owner"
+
+      # required_tag_values: enforce specific values for certain tag keys (optional).
+      # Example: require Environment tag to be exactly "prod"
+      # required_tag_values:
+      #   Environment: "prod"
+      required_tag_values: {}
+
+      # image_lookback_days: how many days back to evaluate image digests for DYNAMIC checks.
+      # Default 90 days matches the SOC2 audit window.
+      image_lookback_days: 90
+
+      # max_high_finding_count: maximum number of HIGH severity findings allowed per image.
+      # Set to 0 to require zero HIGH findings. Increase with caution.
+      max_high_finding_count: 0

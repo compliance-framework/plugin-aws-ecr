@@ -99,6 +99,26 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 		}
 	}
 
+	// Scope policy paths to each resource type using behavior mapping.
+	// Default: a bundle named "*ecr-repository-policies*" covers repository/registry checks;
+	// one named "*ecr-image-policies*" covers image checks.  A single bundle containing all
+	// policies (e.g. plugin-aws-ecr-policies) is mapped to all three behaviors so it
+	// continues to work unchanged; operators may override by supplying two separate bundles
+	// and configuring PolicyBehavior in the agent config.
+	defaultBehaviorMapping := map[string][]string{
+		"ecr-repository-policies": {"repository", "registry"},
+		"ecr-image-policies":      {"image"},
+		// Single all-in-one bundle: cover every behavior so it works out of the box.
+		"plugin-aws-ecr-policies": {"repository", "registry", "image"},
+	}
+	policyEval := request.
+		WithDefaultPolicyBehavior(defaultBehaviorMapping).
+		WithUndefinedMappedTo([]string{"repository", "registry"})
+
+	repositoryPaths := policyEval.PolicyPathsForBehavior("repository")
+	registryPaths   := policyEval.PolicyPathsForBehavior("registry")
+	imagePaths      := policyEval.PolicyPathsForBehavior("image")
+
 	dataFetcher := internal.NewDataFetcher(l.logger, l.config)
 	policyEvaluator := internal.NewPolicyEvaluator(ctx, l.logger, activities)
 
@@ -111,43 +131,52 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 		if err != nil {
 			return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s: fetching repositories: %w", region, err)
 		}
+
+		// Filter to configured accounts if any are specified.
+		repos = internal.FilterByAccounts(repos, l.config.Accounts)
+
 		for _, repo := range repos {
-			evidences, err := policyEvaluator.EvalRepository(ctx, repo, request.GetPolicyPaths(), l.policyData, l.config.PolicyLabels)
+			evidences, err := policyEvaluator.EvalRepository(ctx, repo, repositoryPaths, l.policyData, l.config.PolicyLabels)
 			allEvidences = append(allEvidences, evidences...)
 			if err != nil {
 				evalErrors = errors.Join(evalErrors, fmt.Errorf("evaluating repository %s: %w", repo.RepositoryName, err))
 			}
 		}
 
-		// CONFIG — registry scanning check (one per region)
-		registry, err := dataFetcher.FetchRegistryConfig(ctx, region)
-		if err != nil {
-			l.logger.Warn("failed to fetch registry scanning config", "region", region, "error", err)
-		} else {
-			evidences, err := policyEvaluator.EvalRegistry(ctx, registry, request.GetPolicyPaths(), l.policyData, l.config.PolicyLabels)
-			allEvidences = append(allEvidences, evidences...)
+		// CONFIG — registry scanning check (one per region, skipped for image-only runs)
+		if len(registryPaths) > 0 {
+			registry, err := dataFetcher.FetchRegistryConfig(ctx, region)
 			if err != nil {
-				evalErrors = errors.Join(evalErrors, fmt.Errorf("evaluating registry %s/%s: %w", registry.AccountID, region, err))
+				evalErrors = errors.Join(evalErrors, fmt.Errorf("region %s: fetching registry scanning config: %w", region, err))
+			} else {
+				evidences, err := policyEvaluator.EvalRegistry(ctx, registry, registryPaths, l.policyData, l.config.PolicyLabels)
+				allEvidences = append(allEvidences, evidences...)
+				if err != nil {
+					evalErrors = errors.Join(evalErrors, fmt.Errorf("evaluating registry %s/%s: %w", registry.AccountID, region, err))
+				}
 			}
 		}
 
-		// DYNAMIC — image scan checks
-		if len(repos) > 0 {
-			repoNames := make([]string, len(repos))
-			for i, r := range repos {
-				repoNames[i] = r.RepositoryName
+		// DYNAMIC — image scan checks (skipped for config-only runs)
+		if len(imagePaths) > 0 && len(repos) > 0 {
+			// Group repos by account so each account's images are fetched with the
+			// correct accountID — using repos[0].AccountID for all repos is wrong
+			// when multiple accounts are configured.
+			reposByAccount := make(map[string][]string)
+			for _, r := range repos {
+				reposByAccount[r.AccountID] = append(reposByAccount[r.AccountID], r.RepositoryName)
 			}
-			accountID := repos[0].AccountID
-
-			images, err := dataFetcher.FetchImages(ctx, region, repoNames, accountID, lookbackDays)
-			if err != nil {
-				return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s: fetching images: %w", region, err)
-			}
-			for _, image := range images {
-				evidences, err := policyEvaluator.EvalImage(ctx, image, request.GetPolicyPaths(), l.policyData, l.config.PolicyLabels)
-				allEvidences = append(allEvidences, evidences...)
+			for accID, names := range reposByAccount {
+				images, err := dataFetcher.FetchImages(ctx, region, names, accID, lookbackDays)
 				if err != nil {
-					evalErrors = errors.Join(evalErrors, fmt.Errorf("evaluating image %s@%s: %w", image.RepositoryName, image.ImageDigest, err))
+					return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s account %s: fetching images: %w", region, accID, err)
+				}
+				for _, image := range images {
+					evidences, err := policyEvaluator.EvalImage(ctx, image, imagePaths, l.policyData, l.config.PolicyLabels)
+					allEvidences = append(allEvidences, evidences...)
+					if err != nil {
+						evalErrors = errors.Join(evalErrors, fmt.Errorf("evaluating image %s@%s: %w", image.RepositoryName, image.ImageDigest, err))
+					}
 				}
 			}
 		}

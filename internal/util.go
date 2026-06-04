@@ -6,6 +6,25 @@ func StringAddressed(str string) *string {
 	return &str
 }
 
+// FilterByAccounts returns only the repositories whose AccountID appears in
+// accounts.  If accounts is empty the full list is returned unchanged.
+func FilterByAccounts(repos []RepositoryContext, accounts []string) []RepositoryContext {
+	if len(accounts) == 0 {
+		return repos
+	}
+	allowed := make(map[string]struct{}, len(accounts))
+	for _, a := range accounts {
+		allowed[a] = struct{}{}
+	}
+	out := make([]RepositoryContext, 0, len(repos))
+	for _, r := range repos {
+		if _, ok := allowed[r.AccountID]; ok {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
 // arnPartition returns the AWS partition for the given region.
 // cn-* regions use aws-cn; us-gov-* regions use aws-us-gov; everything else uses aws.
 func arnPartition(region string) string {

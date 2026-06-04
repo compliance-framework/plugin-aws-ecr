@@ -4,6 +4,38 @@ import (
 	"testing"
 )
 
+func TestFilterByAccounts(t *testing.T) {
+	repos := []RepositoryContext{
+		{AccountID: "111111111111", RepositoryName: "repo-a"},
+		{AccountID: "222222222222", RepositoryName: "repo-b"},
+		{AccountID: "333333333333", RepositoryName: "repo-c"},
+	}
+
+	t.Run("empty accounts returns all", func(t *testing.T) {
+		got := FilterByAccounts(repos, nil)
+		if len(got) != 3 {
+			t.Fatalf("want 3, got %d", len(got))
+		}
+	})
+
+	t.Run("filters to matching accounts", func(t *testing.T) {
+		got := FilterByAccounts(repos, []string{"111111111111", "333333333333"})
+		if len(got) != 2 {
+			t.Fatalf("want 2, got %d", len(got))
+		}
+		if got[0].AccountID != "111111111111" || got[1].AccountID != "333333333333" {
+			t.Errorf("unexpected accounts: %v", got)
+		}
+	})
+
+	t.Run("no match returns empty", func(t *testing.T) {
+		got := FilterByAccounts(repos, []string{"999999999999"})
+		if len(got) != 0 {
+			t.Fatalf("want 0, got %d", len(got))
+		}
+	})
+}
+
 func TestArnPartition(t *testing.T) {
 	cases := []struct {
 		region string

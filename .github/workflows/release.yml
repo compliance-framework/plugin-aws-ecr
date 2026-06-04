@@ -1,0 +1,36 @@
+name: New Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install gooci cli
+        run: go install github.com/compliance-framework/gooci@latest
+      - name: Authenticate gooci cli
+        run: gooci login ghcr.io --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}
+      - name: gooci Upload Version
+        run: gooci upload dist/ ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.ref_name }}
+      - name: gooci Upload Latest
+        if: "!github.event.release.prerelease"
+        run: gooci upload dist/ ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest

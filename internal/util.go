@@ -16,7 +16,7 @@ func FilterByAccounts(repos []RepositoryContext, accounts []string) []Repository
 	for _, a := range accounts {
 		allowed[a] = struct{}{}
 	}
-	out := repos[:0]
+	out := make([]RepositoryContext, 0, len(repos))
 	for _, r := range repos {
 		if _, ok := allowed[r.AccountID]; ok {
 			out = append(out, r)

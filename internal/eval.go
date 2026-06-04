@@ -85,7 +85,7 @@ func (pe *PolicyEvaluator) EvalRegistry(ctx context.Context, registry RegistryCo
 		"registry_id":  registry.RegistryID,
 		"region":       registry.Region,
 		"account_id":   registry.AccountID,
-		"resource_arn": fmt.Sprintf("arn:aws:ecr:%s:%s:registry", registry.Region, registry.AccountID),
+		"resource_arn": fmt.Sprintf("arn:%s:ecr:%s:%s:registry", arnPartition(registry.Region), registry.Region, registry.AccountID),
 	})
 
 	actors := ecrActors("AWS ECR Plugin")
@@ -135,7 +135,7 @@ func (pe *PolicyEvaluator) EvalImage(ctx context.Context, image ImageContext, po
 
 	labels := MergeMaps(extraLabels, imageBaseLabels(), map[string]string{
 		"repository_arn":  image.RepositoryArn,
-		"resource_arn":    image.RepositoryArn,
+		"resource_arn":    image.RepositoryArn + "@" + image.ImageDigest,
 		"repository_name": image.RepositoryName,
 		"image_digest":    image.ImageDigest,
 		"region":          image.Region,

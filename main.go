@@ -111,9 +111,7 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 		// Single all-in-one bundle: cover every behavior so it works out of the box.
 		"plugin-aws-ecr-policies": {"repository", "registry", "image"},
 	}
-	policyEval := request.
-		WithDefaultPolicyBehavior(defaultBehaviorMapping).
-		WithUndefinedMappedTo([]string{"repository", "registry"})
+	policyEval := request.WithDefaultPolicyBehavior(defaultBehaviorMapping)
 
 	repositoryPaths := policyEval.PolicyPathsForBehavior("repository")
 	registryPaths   := policyEval.PolicyPathsForBehavior("registry")

@@ -4,6 +4,26 @@ import (
 	"testing"
 )
 
+func TestArnPartition(t *testing.T) {
+	cases := []struct {
+		region string
+		want   string
+	}{
+		{"us-east-1", "aws"},
+		{"eu-west-2", "aws"},
+		{"ap-southeast-1", "aws"},
+		{"cn-north-1", "aws-cn"},
+		{"cn-northwest-1", "aws-cn"},
+		{"us-gov-west-1", "aws-us-gov"},
+		{"us-gov-east-1", "aws-us-gov"},
+	}
+	for _, tc := range cases {
+		if got := arnPartition(tc.region); got != tc.want {
+			t.Errorf("arnPartition(%q) = %q, want %q", tc.region, got, tc.want)
+		}
+	}
+}
+
 func TestParseConfig_RequiresRegions(t *testing.T) {
 	_, err := ParseConfig(map[string]string{})
 	if err == nil {

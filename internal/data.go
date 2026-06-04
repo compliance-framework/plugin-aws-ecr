@@ -271,7 +271,7 @@ func (df *DataFetcher) FetchImages(ctx context.Context, region string, repoNames
 	var images []ImageContext
 
 	for _, repoName := range repoNames {
-		repoARN := fmt.Sprintf("arn:aws:ecr:%s:%s:repository/%s", region, accountID, repoName)
+		repoARN := fmt.Sprintf("arn:%s:ecr:%s:%s:repository/%s", arnPartition(region), region, accountID, repoName)
 		repoImages, err := df.fetchImagesForRepo(ctx, client, region, repoName, repoARN, cutoff)
 		if err != nil {
 			df.logger.Warn("failed to fetch images for repository", "repository", repoName, "error", err)

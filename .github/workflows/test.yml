@@ -1,23 +1,22 @@
-name: CI
+name: Go Test
 
 on:
-  push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
-
-permissions:
-  contents: read
+  workflow_call:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: go vet
-        run: go vet ./...
-      - name: go test
+
+      - name: Test
         run: go test ./...

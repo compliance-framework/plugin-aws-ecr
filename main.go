@@ -106,9 +106,12 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 	// continues to work unchanged; operators may override by supplying two separate bundles
 	// and configuring PolicyBehavior in the agent config.
 	defaultBehaviorMapping := map[string][]string{
+		"ecr-repository-policy":   {"repository"},
+		"ecr-registry-policy":     {"registry"},
+		"ecr-image-policy":        {"image"},
+		// Legacy combined bundle — kept for backward compatibility.
 		"ecr-repository-policies": {"repository", "registry"},
 		"ecr-image-policies":      {"image"},
-		// Single all-in-one bundle: cover every behavior so it works out of the box.
 		"plugin-aws-ecr-policies": {"repository", "registry", "image"},
 	}
 	policyEval := request.WithDefaultPolicyBehavior(defaultBehaviorMapping)

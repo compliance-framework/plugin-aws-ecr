@@ -120,14 +120,15 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 	var evalErrors error
 
 	for _, region := range l.config.Regions {
-		// CONFIG — repository checks
-		repos, err := dataFetcher.FetchRepositories(ctx, region)
-		if err != nil {
-			return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s: fetching repositories: %w", region, err)
+		// Fetch repositories only when at least one bundle covers repository or image checks.
+		var repos []internal.RepositoryContext
+		if len(repositoryPaths) > 0 || len(imagePaths) > 0 {
+			r, err := dataFetcher.FetchRepositories(ctx, region)
+			if err != nil {
+				return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s: fetching repositories: %w", region, err)
+			}
+			repos = internal.FilterByAccounts(r, l.config.Accounts)
 		}
-
-		// Filter to configured accounts if any are specified.
-		repos = internal.FilterByAccounts(repos, l.config.Accounts)
 
 		for _, repo := range repos {
 			evidences, err := policyEvaluator.EvalRepository(ctx, repo, repositoryPaths, l.policyData, l.config.PolicyLabels)

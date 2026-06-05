@@ -100,17 +100,12 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 	}
 
 	// Scope policy paths to each resource type using behavior mapping.
-	// Default: a bundle named "*ecr-repository-policies*" covers repository/registry checks;
-	// one named "*ecr-image-policies*" covers image checks.  A single bundle containing all
-	// policies (e.g. plugin-aws-ecr-policies) is mapped to all three behaviors so it
-	// continues to work unchanged; operators may override by supplying two separate bundles
-	// and configuring PolicyBehavior in the agent config.
+	// Bundles are matched by substring against the policy path, so a bundle
+	// named "*ecr-repository-policies*" maps to repository checks, etc.
 	defaultBehaviorMapping := map[string][]string{
 		"ecr-repository-policies": {"repository"},
 		"ecr-registry-policies":   {"registry"},
 		"ecr-image-policies":      {"image"},
-		// Legacy all-in-one bundle — kept for backward compatibility.
-		"plugin-aws-ecr-policies": {"repository", "registry", "image"},
 	}
 	policyEval := request.WithDefaultPolicyBehavior(defaultBehaviorMapping)
 

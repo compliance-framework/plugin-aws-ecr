@@ -1,0 +1,46 @@
+name: Build and Upload Artifacts
+
+# SHA pins below are managed by Dependabot/Renovate — do not replace with tags.
+on:
+  workflow_call:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: go.mod
+          cache: "none"
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install gooci cli
+        run: go install github.com/compliance-framework/gooci@v0.0.7
+      - name: Authenticate gooci cli
+        env:
+          GOOCI_ACTOR: ${{ github.actor }}
+          GOOCI_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gooci login ghcr.io --username "$GOOCI_ACTOR" --password "$GOOCI_TOKEN"
+      - name: gooci Upload Version
+        env:
+          UPLOAD_OWNER: ${{ github.repository_owner }}
+          UPLOAD_REPO: ${{ github.event.repository.name }}
+          UPLOAD_REF: ${{ github.ref_name }}
+        run: gooci upload dist/ "ghcr.io/${UPLOAD_OWNER}/${UPLOAD_REPO}:${UPLOAD_REF}"
+      - name: gooci Upload Latest
+        if: "!contains(github.ref_name, '-')"
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: gooci upload dist/ "ghcr.io/${OWNER}/${REPO}:latest"

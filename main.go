@@ -100,20 +100,14 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 	}
 
 	// Scope policy paths to each resource type using behavior mapping.
-	// Default: a bundle named "*ecr-repository-policies*" covers repository/registry checks;
-	// one named "*ecr-image-policies*" covers image checks.  A single bundle containing all
-	// policies (e.g. plugin-aws-ecr-policies) is mapped to all three behaviors so it
-	// continues to work unchanged; operators may override by supplying two separate bundles
-	// and configuring PolicyBehavior in the agent config.
+	// Bundles are matched by substring against the policy path, so a bundle
+	// named "*ecr-repository-policies*" maps to repository checks, etc.
 	defaultBehaviorMapping := map[string][]string{
-		"ecr-repository-policies": {"repository", "registry"},
+		"ecr-repository-policies": {"repository"},
+		"ecr-registry-policies":   {"registry"},
 		"ecr-image-policies":      {"image"},
-		// Single all-in-one bundle: cover every behavior so it works out of the box.
-		"plugin-aws-ecr-policies": {"repository", "registry", "image"},
 	}
-	policyEval := request.
-		WithDefaultPolicyBehavior(defaultBehaviorMapping).
-		WithUndefinedMappedTo([]string{"repository", "registry"})
+	policyEval := request.WithDefaultPolicyBehavior(defaultBehaviorMapping)
 
 	repositoryPaths := policyEval.PolicyPathsForBehavior("repository")
 	registryPaths   := policyEval.PolicyPathsForBehavior("registry")
@@ -126,14 +120,15 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 	var evalErrors error
 
 	for _, region := range l.config.Regions {
-		// CONFIG — repository checks
-		repos, err := dataFetcher.FetchRepositories(ctx, region)
-		if err != nil {
-			return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s: fetching repositories: %w", region, err)
+		// Fetch repositories only when at least one bundle covers repository or image checks.
+		var repos []internal.RepositoryContext
+		if len(repositoryPaths) > 0 || len(imagePaths) > 0 {
+			r, err := dataFetcher.FetchRepositories(ctx, region)
+			if err != nil {
+				return &proto.EvalResponse{Status: proto.ExecutionStatus_FAILURE}, fmt.Errorf("region %s: fetching repositories: %w", region, err)
+			}
+			repos = internal.FilterByAccounts(r, l.config.Accounts)
 		}
-
-		// Filter to configured accounts if any are specified.
-		repos = internal.FilterByAccounts(repos, l.config.Accounts)
 
 		for _, repo := range repos {
 			evidences, err := policyEvaluator.EvalRepository(ctx, repo, repositoryPaths, l.policyData, l.config.PolicyLabels)

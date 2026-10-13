@@ -14,13 +14,13 @@ import (
 
 // mockECRClient implements ECRClient for testing.
 type mockECRClient struct {
-	describeRepositories          func(context.Context, *ecr.DescribeRepositoriesInput, ...func(*ecr.Options)) (*ecr.DescribeRepositoriesOutput, error)
-	getLifecyclePolicy            func(context.Context, *ecr.GetLifecyclePolicyInput, ...func(*ecr.Options)) (*ecr.GetLifecyclePolicyOutput, error)
-	getRepositoryPolicy           func(context.Context, *ecr.GetRepositoryPolicyInput, ...func(*ecr.Options)) (*ecr.GetRepositoryPolicyOutput, error)
-	listTagsForResource           func(context.Context, *ecr.ListTagsForResourceInput, ...func(*ecr.Options)) (*ecr.ListTagsForResourceOutput, error)
-	getRegistryScanningConfig     func(context.Context, *ecr.GetRegistryScanningConfigurationInput, ...func(*ecr.Options)) (*ecr.GetRegistryScanningConfigurationOutput, error)
-	describeImages                func(context.Context, *ecr.DescribeImagesInput, ...func(*ecr.Options)) (*ecr.DescribeImagesOutput, error)
-	describeImageScanFindings     func(context.Context, *ecr.DescribeImageScanFindingsInput, ...func(*ecr.Options)) (*ecr.DescribeImageScanFindingsOutput, error)
+	describeRepositories      func(context.Context, *ecr.DescribeRepositoriesInput, ...func(*ecr.Options)) (*ecr.DescribeRepositoriesOutput, error)
+	getLifecyclePolicy        func(context.Context, *ecr.GetLifecyclePolicyInput, ...func(*ecr.Options)) (*ecr.GetLifecyclePolicyOutput, error)
+	getRepositoryPolicy       func(context.Context, *ecr.GetRepositoryPolicyInput, ...func(*ecr.Options)) (*ecr.GetRepositoryPolicyOutput, error)
+	listTagsForResource       func(context.Context, *ecr.ListTagsForResourceInput, ...func(*ecr.Options)) (*ecr.ListTagsForResourceOutput, error)
+	getRegistryScanningConfig func(context.Context, *ecr.GetRegistryScanningConfigurationInput, ...func(*ecr.Options)) (*ecr.GetRegistryScanningConfigurationOutput, error)
+	describeImages            func(context.Context, *ecr.DescribeImagesInput, ...func(*ecr.Options)) (*ecr.DescribeImagesOutput, error)
+	describeImageScanFindings func(context.Context, *ecr.DescribeImageScanFindingsInput, ...func(*ecr.Options)) (*ecr.DescribeImageScanFindingsOutput, error)
 }
 
 func (m *mockECRClient) DescribeRepositories(ctx context.Context, params *ecr.DescribeRepositoriesInput, optFns ...func(*ecr.Options)) (*ecr.DescribeRepositoriesOutput, error) {
@@ -91,9 +91,9 @@ func TestFetchRepositories_SingleRepo(t *testing.T) {
 		return &ecr.DescribeRepositoriesOutput{
 			Repositories: []types.Repository{
 				{
-					RepositoryArn:        aws.String(arn),
-					RepositoryName:       aws.String("my-app"),
-					RegistryId:           aws.String("123456789012"),
+					RepositoryArn:      aws.String(arn),
+					RepositoryName:     aws.String("my-app"),
+					RegistryId:         aws.String("123456789012"),
 					ImageTagMutability: types.ImageTagMutabilityImmutable,
 					ImageScanningConfiguration: &types.ImageScanningConfiguration{
 						ScanOnPush: true,
@@ -159,9 +159,9 @@ func TestFetchRepositories_WithLifecycleAndPolicy(t *testing.T) {
 		return &ecr.DescribeRepositoriesOutput{
 			Repositories: []types.Repository{
 				{
-					RepositoryArn:  aws.String(arn),
-					RepositoryName: aws.String("prod-app"),
-					RegistryId:     aws.String("123456789012"),
+					RepositoryArn:              aws.String(arn),
+					RepositoryName:             aws.String("prod-app"),
+					RegistryId:                 aws.String("123456789012"),
 					ImageScanningConfiguration: &types.ImageScanningConfiguration{ScanOnPush: false},
 					EncryptionConfiguration:    &types.EncryptionConfiguration{EncryptionType: types.EncryptionTypeAes256},
 				},
@@ -270,8 +270,8 @@ func TestFetchImages_WithinLookback(t *testing.T) {
 
 	mock := noopPerRepoMock()
 	mock.describeImages = func(_ context.Context, params *ecr.DescribeImagesInput, _ ...func(*ecr.Options)) (*ecr.DescribeImagesOutput, error) {
-		recentTime := now.Add(-10 * 24 * time.Hour)  // 10 days ago — in window
-		oldTime := now.Add(-100 * 24 * time.Hour)     // 100 days ago — outside window
+		recentTime := now.Add(-10 * 24 * time.Hour) // 10 days ago — in window
+		oldTime := now.Add(-100 * 24 * time.Hour)   // 100 days ago — outside window
 		return &ecr.DescribeImagesOutput{
 			ImageDetails: []types.ImageDetail{
 				{ImageDigest: aws.String(recentDigest), ImagePushedAt: &recentTime, ImageTags: []string{"latest"}},

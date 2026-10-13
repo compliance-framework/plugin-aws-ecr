@@ -110,8 +110,8 @@ func (l *CompliancePlugin) Eval(request *proto.EvalRequest, apiHelper runner.Api
 	policyEval := request.WithDefaultPolicyBehavior(defaultBehaviorMapping)
 
 	repositoryPaths := policyEval.PolicyPathsForBehavior("repository")
-	registryPaths   := policyEval.PolicyPathsForBehavior("registry")
-	imagePaths      := policyEval.PolicyPathsForBehavior("image")
+	registryPaths := policyEval.PolicyPathsForBehavior("registry")
+	imagePaths := policyEval.PolicyPathsForBehavior("image")
 
 	dataFetcher := internal.NewDataFetcher(l.logger, l.config)
 	policyEvaluator := internal.NewPolicyEvaluator(ctx, l.logger, activities)

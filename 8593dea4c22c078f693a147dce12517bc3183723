@@ -3,3 +3,6 @@ lisa-design:
 - Go directive left at 1.26.3: already above agent v0.9.1's go 1.26.1 and the 1.24 floor for the shared release workflow.
 - gofmt fix is a separate style: commit (whitespace only in main.go, internal/data.go, internal/data_test.go) because the stacked shared CI runs gofmt and the spec requires gofmt -l to be empty on this layer.
 - Plugin already serves runner.RunnerV2GRPCPlugin and implements Init (protocol v2); no W2-S2-T02 work needed.
+
+lisa-selfreview:
+- pass 1 (layer 1): approve, no findings. Diff is go.mod/go.sum (agent v0.7.0 -> v0.9.1, transitive api v0.16.0 -> v0.21.0, gooci v0.0.6 -> v0.0.8) plus gofmt whitespace. Checked against core/go/go-plugin rules; build, vet, test, test -race, gofmt, golangci-lint (shared config, new-from-merge-base and full) and goreleaser snapshot build all pass. Deferred: goreleaser check deprecation archives.format (layer 2).

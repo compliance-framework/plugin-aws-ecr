@@ -1,0 +1,2 @@
+lisa-selfreview:
+Pass 1 (strict): no findings. Diff matches the merged batch-1 references (plugin-file-attestation#9, plugin-github-repositories#26): callers pinned to workflows v1.5.2, release-please-config.json has no drift from defaults.json, goreleaser builds/archives unchanged, manifest seeded at 0.1.0 (v0.1.0 is an ancestor of main). actionlint, go build/test, goreleaser check and snapshot pass.

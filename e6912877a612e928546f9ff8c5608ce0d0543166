@@ -2,3 +2,6 @@ lisa-design:
 - ci.yml is mock-plugin-1's caller copied verbatim minus its trial header comment, pinned to workflows v1.5.1 (7b55019); push trigger stays on main (the repo's default branch).
 - push.yml and test.yml deleted together: only push.yml called test.yml; release.yml/build-and-upload.yml untouched (W3 replaces them).
 - goreleaser archives.format -> formats: [tar.gz] only removes the deprecation; snapshot release before/after produced the same 4 archives with the same names and contents (README.md, plugin). The release workflow's goreleaser '~> v2' supports formats.
+
+lisa-selfreview:
+- pass 1 (layer 2): approve, no findings. Checked ci.yml against the mock (permissions scoped per job, actions pinned by SHA), no other workflow references the deleted files; actionlint v1.7.12 clean; gofmt, tidy, vet, test, test -race, golangci-lint (new-from base and from main), goreleaser check (exit 0) and snapshot build pass.

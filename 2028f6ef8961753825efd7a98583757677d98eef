@@ -1,0 +1,2 @@
+lisa-design:
+- Only the module declaration and the one internal import change; go mod tidy produced no diff and .goreleaser.yaml has no -X ldflags. No other file mentions container-solutions.

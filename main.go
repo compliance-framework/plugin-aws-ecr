@@ -7,7 +7,7 @@ import (
 
 	"github.com/compliance-framework/agent/runner"
 	"github.com/compliance-framework/agent/runner/proto"
-	"github.com/container-solutions/plugin-aws-ecr/internal"
+	"github.com/compliance-framework/plugin-aws-ecr/internal"
 	"github.com/hashicorp/go-hclog"
 	goplugin "github.com/hashicorp/go-plugin"
 )

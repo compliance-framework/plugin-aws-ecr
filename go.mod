@@ -1,4 +1,4 @@
-module github.com/container-solutions/plugin-aws-ecr
+module github.com/compliance-framework/plugin-aws-ecr
 
 go 1.26.3
 

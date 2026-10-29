@@ -2,6 +2,8 @@ module github.com/compliance-framework/plugin-aws-ecr
 
 go 1.26.3
 
+toolchain go1.26.10
+
 require (
 	github.com/aws/aws-sdk-go-v2 v1.47.3
 	github.com/aws/aws-sdk-go-v2/config v1.33.9

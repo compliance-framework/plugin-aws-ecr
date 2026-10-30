@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/compliance-framework/plugin-aws-ecr/compare/v0.1.2...v0.1.3) (2026-10-30)
+
+
+### Bug Fixes
+
+* **deps:** build with the go1.26.10 toolchain so Renovate can ship Go security fixes ([#28](https://github.com/compliance-framework/plugin-aws-ecr/issues/28)) ([dd5db84](https://github.com/compliance-framework/plugin-aws-ecr/commit/dd5db8420683f778e2136f3c597333be215f07cc))
+* **deps:** update aws-sdk-go-v2 monorepo ([#32](https://github.com/compliance-framework/plugin-aws-ecr/issues/32)) ([e83d9ba](https://github.com/compliance-framework/plugin-aws-ecr/commit/e83d9ba9b7f62974744326185dfdbf42c2398832))
+
 ## [0.1.2](https://github.com/compliance-framework/plugin-aws-ecr/compare/v0.1.1...v0.1.2) (2026-10-28)
 
 

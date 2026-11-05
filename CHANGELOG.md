@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/compliance-framework/plugin-aws-ecr/compare/v0.1.3...v0.1.4) (2026-11-05)
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-go-v2 monorepo ([#34](https://github.com/compliance-framework/plugin-aws-ecr/issues/34)) ([d86d296](https://github.com/compliance-framework/plugin-aws-ecr/commit/d86d29658ce516c911718a1d04f566a20dcc35af))
+
 ## [0.1.3](https://github.com/compliance-framework/plugin-aws-ecr/compare/v0.1.2...v0.1.3) (2026-11-02)
 
 

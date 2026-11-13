@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.4](https://github.com/compliance-framework/plugin-aws-ecr/compare/v0.1.3...v0.1.4) (2026-11-13)
+
+
+### Bug Fixes
+
+* **deps:** update aws-sdk-go-v2 monorepo ([#34](https://github.com/compliance-framework/plugin-aws-ecr/issues/34)) ([d86d296](https://github.com/compliance-framework/plugin-aws-ecr/commit/d86d29658ce516c911718a1d04f566a20dcc35af))
+* **deps:** update aws-sdk-go-v2 monorepo ([#37](https://github.com/compliance-framework/plugin-aws-ecr/issues/37)) ([e3967d4](https://github.com/compliance-framework/plugin-aws-ecr/commit/e3967d473140baa6b7d29b6bb89574729b85d5ac))
+* **deps:** update aws-sdk-go-v2 monorepo ([#39](https://github.com/compliance-framework/plugin-aws-ecr/issues/39)) ([c128ee6](https://github.com/compliance-framework/plugin-aws-ecr/commit/c128ee67d44f4f7e824b88bcec685e350e6a4920))
+* **deps:** update aws-sdk-go-v2 monorepo ([#40](https://github.com/compliance-framework/plugin-aws-ecr/issues/40)) ([99f6b87](https://github.com/compliance-framework/plugin-aws-ecr/commit/99f6b87ccbebebfc28200f2713cab77284b5fe6c))
+* **deps:** update security fixes (gomod) [security] ([#38](https://github.com/compliance-framework/plugin-aws-ecr/issues/38)) ([2cba744](https://github.com/compliance-framework/plugin-aws-ecr/commit/2cba74449d0d3d86039d98d35a21f44f13cc9b75))
+
 ## [0.1.3](https://github.com/compliance-framework/plugin-aws-ecr/compare/v0.1.2...v0.1.3) (2026-11-02)
 
 
